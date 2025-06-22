@@ -1,14 +1,19 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import axios from "axios";
 
 const apiSlice = createApi({
+  reducerPath: "todoGet",
+  //   keepUnusedDataFor: 20,   // keep data till seconds
+
   baseQuery: fetchBaseQuery({ baseUrl: "https://dummyjson.com" }),
+  tagTypes: ["AddTodo", "GetAllTodoTag"],
   endpoints: function (builder) {
     return {
       getAllTodos: builder.query({
-        query: (id) => {
+        query: () => {
           return `/todos`;
         },
+        providesTags: ["GetAllTodoTag"],
+        // keepUnusedDataFor: 20,  // we can keep on individual
         transformResponse: function (data) {
           return data?.todos || [];
         },
@@ -18,8 +23,20 @@ const apiSlice = createApi({
           return `/todos/${id}`;
         },
       }),
+
+      addTodo: builder.mutation({
+        query: (params) => {
+          return {
+            url: `/todos/add`,
+            method: "POST",
+            body: params,
+          };
+        },
+        invalidatesTags: ["GetAllTodoTag"],
+      }),
     };
   },
 });
-export const { useGetAllTodosQuery } = apiSlice;
+export const { useGetAllTodosQuery, useAddTodoMutation, useLazyGetTodoQuery } =
+  apiSlice;
 export default apiSlice;
