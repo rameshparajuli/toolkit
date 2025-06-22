@@ -1,31 +1,49 @@
 import { useEffect, useState } from "react";
-
+import axios from "axios";
 import "./App.css";
-
-import List from "./pages/list";
-import Cart from "./pages/cart";
-import Nav from "./pages/nav";
-import useNetwork from "./network/useNetwork";
+import TodoList from "./todos/todo-list";
 
 function App() {
-  const [showCart, setShowCart] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [data, setData] = useState([]);
+  const [error, setError] = useState("Default Error");
 
-  const network = useNetwork();
+  useEffect(() => {
+    setIsLoading(true);
+    axios
+      .get("https://dummyjson.com/todos")
+      .then((response) => {
+        setData(response?.data?.todos);
+      })
+      .catch((e) => {
+        setError(e);
+      })
+      .finally(() => {
+        setError();
+        setIsLoading(false);
+      });
+  }, []);
 
-  if (!network.isLoading && !network.data) {
-    network.fetch();
+  if (isLoading) {
+    return (
+      <div>
+        <h1>Data is Loading</h1>
+      </div>
+    );
   }
 
-  function handleCartClick() {
-    setShowCart(!showCart);
+  if (error) {
+    return (
+      <div>
+        <h1>Error Occured</h1>
+      </div>
+    );
   }
 
   return (
     <>
-      <div>
-        <Nav onCartClick={handleCartClick} />
-        {showCart && <Cart />}
-        {!showCart && <List onCartClick={handleCartClick} />}
+      <div className="todo-card">
+        <TodoList todos={data} />
       </div>
     </>
   );
